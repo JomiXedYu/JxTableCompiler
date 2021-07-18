@@ -1,10 +1,10 @@
-import RecordInfo
+from TableFieldInfo import *
 
 
-type_map = RecordInfo.get_type_map()
-type_map[RecordInfo.TypeInt16] = "short"
-type_map[RecordInfo.TypeInt32] = "int"
-type_map[RecordInfo.TypeInt64] = "long"
+type_map = get_type_map()
+type_map[TypeInt16] = "short"
+type_map[TypeInt32] = "int"
+type_map[TypeInt64] = "long"
 
 
 class csharp:
@@ -12,12 +12,12 @@ class csharp:
     def get_file_ext(self):
         return ".cs"
 
-    def gen_class(self, name: str, field_infos: list[RecordInfo.TableFieldInfo]) -> str:
+    def gen_class(self, field_infos: TableFieldInfo) -> str:
         strlist = []
-        strlist.append("\npublic class " + name)
+        strlist.append("\npublic class " + field_infos.class_type_name)
         strlist.append("{")
-        for _field in field_infos:
-            field: RecordInfo.TableFieldInfo = _field
+        for _field in field_infos.field_infos:
+            field: FieldInfo = _field
             if field.note != None:
                 strlist.append("    /// <summary>")
                 strlist.append("    /// " + field.note)
@@ -28,14 +28,16 @@ class csharp:
 
         return "\n".join(strlist)
 
-    def get_model(self, name: str, field_infos: list[RecordInfo.TableFieldInfo], namespace: str) -> str:
+    def get_model(self, field_infos: TableFieldInfo) -> str:
         strlist = []
+
+        namespace = field_infos.namespace
 
         if namespace != None:
             strlist.append("namespace {}".format(namespace))
             strlist.append("{")
 
-        body = self.gen_class(name, field_infos)
+        body = self.gen_class(field_infos)
         if namespace != None:
             body = body.replace("\n", "\n    ")
         strlist.append(body)
@@ -45,20 +47,22 @@ class csharp:
 
         return "\n".join(strlist)
 
-    def get_all_model(self, table_field_infos: dict[str, list[RecordInfo.TableFieldInfo]], namespace: str) -> str:
+    def get_all_model(self, table_field_infos: dict[str, TableFieldInfo]) -> str:
         strlist = []
 
-        if namespace != None:
-            strlist.append("namespace {}".format(namespace))
-            strlist.append("{")
+        nsinfo = get_namespace_dict(table_field_infos)
 
-        for table_name, field_infos in table_field_infos.items():
-            body = self.gen_class(table_name, field_infos)
-            if namespace != None:
-                body = body.replace("\n", "\n    ")
-            strlist.append(body)
+        for ns, tbinfos in nsinfo.items():
+            if ns != "":
+                strlist.append("namespace {}".format(ns))
+                strlist.append("{")
 
-        if namespace != None:
-            strlist.append("}")
+            for tbinfo in tbinfos:
+                body = self.gen_class(tbinfo)
+                if ns != "":
+                    body = body.replace("\n", "\n    ")
+                strlist.append(body)
+            if ns != "":
+                strlist.append("}")
 
         return "\n".join(strlist)

@@ -13,9 +13,8 @@ class ModelConfig:
 
     generator_names: list[str]
 
-    def __init__(self, outdir: str, namespace: str = None, out_filename: str = None) -> None:
+    def __init__(self, outdir: str, out_filename: str = None) -> None:
         self.outdir = outdir
-        self.namespace = namespace
         self.out_filename = out_filename
         self.is_combine = out_filename != None
         self.generator_names = []

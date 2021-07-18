@@ -2,7 +2,7 @@ from ModelGenAbstract import ModelGenAbstract
 import openpyxl
 import importlib
 import os
-from RecordInfo import *
+from TableFieldInfo import *
 from Config import *
 
 
@@ -35,7 +35,7 @@ def get_module_names(dir: str) -> list:
     return ret
 
 
-def get_models() -> dict[str, ModelGenAbstract]:
+def get_model_gens() -> dict[str, ModelGenAbstract]:
     names = get_module_names("./Model")
     dict = {}
     for name in names:
@@ -60,13 +60,26 @@ def write_all_text(filename: str, text: str):
         f.write(text)
 
 
-def compile(excel_paths: list, model: ModelConfig, compiler: CompilerConfig):
+def get_namespace(class_name: str) -> str:
+    if class_name.find('.') == -1:
+        return None
+    return class_name[:class_name.rfind('.')]
 
-    table_models: dict[str, list[TableFieldInfo]] = {}
+
+def get_class_type_name(class_name: str) -> str:
+    if class_name.find('.') == -1:
+        return class_name
+    return class_name[class_name.rfind('.')+1:]
+
+def get_table_datas(excel_paths: list):
+
+    table_datas: dict[str, TableFieldInfo] = {}
 
     for excel_path in excel_paths:
         table_name = get_filename_without_ext(excel_path)
-        table_models[table_name] = []
+        namespace = get_namespace(table_name)
+        class_type_name = get_class_type_name(table_name)
+        table_datas[table_name] = TableFieldInfo(class_type_name, [], namespace)
 
         excel = openpyxl.load_workbook(excel_path)
         sheet = excel.active
@@ -85,7 +98,8 @@ def compile(excel_paths: list, model: ModelConfig, compiler: CompilerConfig):
             field = rows[line_field][i].value
             note = rows[line_note][i].value
 
-            table_models[table_name].append(TableFieldInfo(type, field, note))
+            table_datas[table_name].field_infos.append(
+                FieldInfo(type, field, note))
         # data
         rec_list = []
         for line in range(line_field + 1, len(rows)):
@@ -94,35 +108,48 @@ def compile(excel_paths: list, model: ModelConfig, compiler: CompilerConfig):
                 rec.append(rec_item.value)
             rec_list.append(rec)
 
+    return table_datas
+
+def compile(excel_paths: list, modelcfg: ModelConfig, compiler: CompilerConfig):
+
+    table_models: dict[str, TableFieldInfo] = get_table_datas(excel_paths)
+
     # end loop
     # generate model
-    model_gens = get_models()
-    for gen_name in model.generator_names:
+    model_gens = get_model_gens()
+    for gen_name in modelcfg.generator_names:
         gen = model_gens[gen_name]
 
-        if model.is_combine:
-            text = gen.get_all_model(table_models, model.namespace)
-            path = model.outdir + "/" + model.out_filename + gen.get_file_ext()
+        if modelcfg.is_combine:
+            text = gen.get_all_model(table_models)
+            path = modelcfg.outdir + "/" + modelcfg.out_filename + gen.get_file_ext()
             write_all_text(path, text)
         else:
             for table_name, field_infos in table_models.items():
-                text = gen.get_model(table_name, field_infos, model.namespace)
-                path = model.outdir + "/" + table_name + gen.get_file_ext()
+                text = gen.get_model(field_infos)
+
+                folder = modelcfg.outdir
+                if field_infos.namespace != None:
+                    folder = folder + "/" + field_infos.namespace.replace('.', '/')
+                if not os.path.exists(folder):
+                    os.makedirs(folder)
+                path = folder + "/" + field_infos.class_type_name + gen.get_file_ext()
                 write_all_text(path, text)
     # compile
     pass
 
 
-desktop = r"C:\Users\JomiXedYu\Desktop"
-path = [desktop + r"\en.xlsx"]
+desktop = r"C:\Users\JomiXedYu\Desktop\baba"
+path = [desktop + "\\en.xlsx", desktop + "\\kk.ch.xlsx"]
 
-model = ModelConfig(desktop, namespace="ax", out_filename="kk")
+
+model = ModelConfig(desktop, out_filename="ac")
 model.add("csharp")
-model.add("java")
-model.add("cpp")
-model.add("lua")
-model.add("c")
-model.add("python")
+# model.add("java")
+# model.add("cpp")
+# model.add("lua")
+# model.add("c")
+# model.add("python")
 
 
 compile(path, model, None)
