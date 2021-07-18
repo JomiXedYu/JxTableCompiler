@@ -133,14 +133,14 @@ def compile(excel_paths: list, modelcfg: ModelConfig, compiler: CompilerConfig):
 desktop = r"C:\Users\JomiXedYu\Desktop\baba"
 path = [desktop + "\\en.xlsx", desktop + "\\kk.ch.xlsx"]
 
+# -mdir outdir -moutfn ac -mexcels xx xx xx xx -m csharp lua -c json -cdir desktop
 
 model = ModelConfig(desktop, out_filename="ac")
 model.add("csharp")
-# model.add("java")
-# model.add("cpp")
-# model.add("lua")
-# model.add("c")
-# model.add("python")
+model.add("java")
+model.add("cpp")
+model.add("lua")
+model.add("c")
 
 comp = CompilerConfig(desktop)
 comp.add("json")
