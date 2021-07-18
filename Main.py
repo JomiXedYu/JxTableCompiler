@@ -1,3 +1,5 @@
+from TableData import TableData
+from CompilerAbstract import CompilerAbstract
 from ModelGenAbstract import ModelGenAbstract
 import openpyxl
 import importlib
@@ -45,11 +47,11 @@ def get_model_gens() -> dict[str, ModelGenAbstract]:
     return dict
 
 
-def get_compiler() -> dict[str, ModelGenAbstract]:
+def get_compiler() -> dict[str, CompilerAbstract]:
     names = get_module_names("./Compiler")
     dict = {}
     for name in names:
-        module = importlib.import_module(name)
+        module = importlib.import_module("Compiler." + name)
         class_type = getattr(module, name)
         dict[name] = class_type()
     return dict
@@ -71,15 +73,20 @@ def get_class_type_name(class_name: str) -> str:
         return class_name
     return class_name[class_name.rfind('.')+1:]
 
-def get_table_datas(excel_paths: list):
 
-    table_datas: dict[str, TableFieldInfo] = {}
+def get_tables_datas(excel_paths: list) -> dict[str, TableData]:
 
+    table_datas: dict[str, TableData] = {}
+    #
     for excel_path in excel_paths:
         table_name = get_filename_without_ext(excel_path)
         namespace = get_namespace(table_name)
         class_type_name = get_class_type_name(table_name)
-        table_datas[table_name] = TableFieldInfo(class_type_name, [], namespace)
+
+        table_field_info = TableFieldInfo(class_type_name, [], namespace)
+        records = []
+        table_datas[table_name] = TableData(
+            table_name, class_type_name, table_field_info, records)
 
         excel = openpyxl.load_workbook(excel_path)
         sheet = excel.active
@@ -98,44 +105,55 @@ def get_table_datas(excel_paths: list):
             field = rows[line_field][i].value
             note = rows[line_note][i].value
 
-            table_datas[table_name].field_infos.append(
+            table_datas[table_name].field_infos.field_infos.append(
                 FieldInfo(type, field, note))
         # data
-        rec_list = []
         for line in range(line_field + 1, len(rows)):
             rec = []
-            for rec_item in rows[line]:
-                rec.append(rec_item.value)
-            rec_list.append(rec)
+            for r in rows[line]:
+                rec.append(r.value)
+            table_datas[table_name].records.append(rec)
 
     return table_datas
 
+
+def get_table_field_infos(tables_datas: dict[str, TableData]) -> dict[str, TableFieldInfo]:
+    dic = {}
+    for name, data in tables_datas.items():
+        dic[name] = data.field_infos
+    return dic
+
+
 def compile(excel_paths: list, modelcfg: ModelConfig, compiler: CompilerConfig):
 
-    table_models: dict[str, TableFieldInfo] = get_table_datas(excel_paths)
-
-    # end loop
+    tables_datas: dict[str, TableData] = get_tables_datas(excel_paths)
+    field_infos = get_table_field_infos(tables_datas)
     # generate model
     model_gens = get_model_gens()
     for gen_name in modelcfg.generator_names:
         gen = model_gens[gen_name]
 
         if modelcfg.is_combine:
-            text = gen.get_all_model(table_models)
+            text = gen.get_all_model(field_infos)
             path = modelcfg.outdir + "/" + modelcfg.out_filename + gen.get_file_ext()
             write_all_text(path, text)
         else:
-            for table_name, field_infos in table_models.items():
-                text = gen.get_model(field_infos)
+            for field_info in field_infos.values():
+                text = gen.get_model(field_info)
 
                 folder = modelcfg.outdir
-                if field_infos.namespace != None:
-                    folder = folder + "/" + field_infos.namespace.replace('.', '/')
+                if field_info.namespace != None:
+                    folder = folder + "/" + \
+                        field_info.namespace.replace('.', '/')
                 if not os.path.exists(folder):
                     os.makedirs(folder)
-                path = folder + "/" + field_infos.class_type_name + gen.get_file_ext()
+                path = folder + "/" + field_info.class_type_name + gen.get_file_ext()
                 write_all_text(path, text)
     # compile
+    cmpls = get_compiler()
+    for cmpl_name in compiler.names:
+        cmpl = cmpls[cmpl_name]
+        cmpl.compile(compiler.outdir, tables_datas.values())
     pass
 
 
@@ -151,5 +169,7 @@ model.add("csharp")
 # model.add("c")
 # model.add("python")
 
+comp = CompilerConfig(desktop)
+comp.add("json")
 
-compile(path, model, None)
+compile(path, model, comp)

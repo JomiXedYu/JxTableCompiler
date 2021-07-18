@@ -1,8 +1,7 @@
+from TableData import TableData
+
 
 class CompilerAbstract:
 
-    def get_name(self):
-        pass
-
-    def compile(self):
+    def compile(self, outdir: str, table_datas: list[TableData]):
         pass

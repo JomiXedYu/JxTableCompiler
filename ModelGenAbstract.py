@@ -1,4 +1,5 @@
 from TableFieldInfo import *
+from TableData import *
 
 
 class ModelGenAbstract:

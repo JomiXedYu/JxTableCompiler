@@ -24,5 +24,10 @@ class ModelConfig:
 
 
 class CompilerConfig(ConfigAbstact):
-    def __init__(self, is_combine) -> None:
-        super().__init__(is_combine)
+
+    def __init__(self, outdir: str) -> None:
+        self.outdir = outdir
+        self.names = []
+
+    def add(self, name: str):
+        self.names.append(name)
