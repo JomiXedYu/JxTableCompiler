@@ -1,14 +1,4 @@
 
-
-class ConfigAbstact:
-    def __init__(self, is_combine) -> None:
-        self.configs = []
-        self.is_combine = is_combine
-
-    def add(self, type: str, out_path: str):
-        self.configs.append((type, out_path))
-
-
 class ModelConfig:
 
     generator_names: list[str]
@@ -23,7 +13,7 @@ class ModelConfig:
         self.generator_names.append(generator_name)
 
 
-class CompilerConfig(ConfigAbstact):
+class CompilerConfig:
 
     def __init__(self, outdir: str) -> None:
         self.outdir = outdir

@@ -7,6 +7,7 @@ import os
 from TableFieldInfo import *
 from Config import *
 
+import ExtensionLoader
 
 def get_filename_ext(filename: str) -> str:
     return filename[filename.rfind('.'):]
@@ -23,38 +24,13 @@ def get_filename_without_ext(filename: str) -> str:
     return sfn[:dotpos]
 
 
-def is_pyfile(filename: str) -> bool:
-    return get_filename_ext(filename) == ".py"
-
-
-def get_module_names(dir: str) -> list:
-    ret = []
-    for f in os.listdir(dir):
-        if not is_pyfile(f):
-            continue
-        pos = f.rfind('.')
-        ret.append(f[0:pos])
-    return ret
 
 
 def get_model_gens() -> dict[str, ModelGenAbstract]:
-    names = get_module_names("./Model")
-    dict = {}
-    for name in names:
-        module = importlib.import_module("Model." + name)
-        class_type = getattr(module, name)
-        dict[name] = class_type()
-    return dict
-
+    return ExtensionLoader.get_classes("Model")
 
 def get_compiler() -> dict[str, CompilerAbstract]:
-    names = get_module_names("./Compiler")
-    dict = {}
-    for name in names:
-        module = importlib.import_module("Compiler." + name)
-        class_type = getattr(module, name)
-        dict[name] = class_type()
-    return dict
+    return ExtensionLoader.get_classes("Compiler")
 
 
 def write_all_text(filename: str, text: str):
