@@ -23,9 +23,6 @@ def get_filename_without_ext(filename: str) -> str:
         return sfn
     return sfn[:dotpos]
 
-
-
-
 def get_model_gens() -> dict[str, ModelGenAbstract]:
     return ExtensionLoader.get_classes("Model")
 
@@ -53,7 +50,7 @@ def get_class_type_name(class_name: str) -> str:
 def get_tables_datas(excel_paths: list) -> dict[str, TableData]:
 
     table_datas: dict[str, TableData] = {}
-    #
+    
     for excel_path in excel_paths:
         table_name = get_filename_without_ext(excel_path)
         namespace = get_namespace(table_name)
