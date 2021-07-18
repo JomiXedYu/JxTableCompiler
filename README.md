@@ -19,9 +19,16 @@
 ### Model生成支持语言：
 当前支持
 - csharp
-
+- c
+- cpp
+- java
+- lua
 
 
 ### Data生成支持：
 当前支持
 - json
+
+预计支持
+- sqlite
+- xml
