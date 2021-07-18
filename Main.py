@@ -1,9 +1,9 @@
+import openpyxl
+import os
+
 from TableData import TableData
 from CompilerAbstract import CompilerAbstract
 from ModelGenAbstract import ModelGenAbstract
-import openpyxl
-import importlib
-import os
 from TableFieldInfo import *
 from Config import *
 
