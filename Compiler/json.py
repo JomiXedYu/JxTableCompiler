@@ -11,7 +11,7 @@ class json:
             recs = data.to_pyobject()
             jstr = js.dumps(recs, indent=4, ensure_ascii=False)
             path = outdir + "/" + data.table_name + ".json"
-            with open(path, "w+") as f:
+            with open(path, "w+",encoding="utf-8") as f:
                 f.write(jstr)
 
         pass

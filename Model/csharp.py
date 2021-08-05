@@ -6,6 +6,10 @@ type_map[TypeInt16] = "short"
 type_map[TypeInt32] = "int"
 type_map[TypeInt64] = "long"
 
+def gettype(key: str) -> str:
+    if key in type_map:
+        return type_map[key]
+    return key
 
 class csharp:
 
@@ -24,7 +28,7 @@ class csharp:
                 strlist.append("    /// " + field.note)
                 strlist.append("    /// </summary>")
             strlist.append("    public {} {};".format(
-                type_map[field.type], field.name))
+                gettype(field.type), field.name))
         strlist.append("}\n")
 
         return "\n".join(strlist)

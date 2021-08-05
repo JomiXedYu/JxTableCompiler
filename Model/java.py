@@ -8,6 +8,10 @@ type_map[TypeInt64] = "long"
 type_map[TypeBool] = "boolean"
 type_map[TypeString] = "String"
 
+def gettype(key: str) -> str:
+    if key in type_map:
+        return type_map[key]
+    return key
 
 class java:
 
@@ -29,7 +33,7 @@ class java:
                 public_str = "public "
 
             strlist.append("    {}{} {};".format(
-                public_str, type_map[field.type], field.name))
+                public_str, gettype(field.type), field.name))
         strlist.append("}\n")
 
         return "\n".join(strlist)

@@ -7,6 +7,10 @@ type_map[TypeInt32] = "int32_t"
 type_map[TypeInt64] = "int64_t"
 type_map[TypeString] = "std::string"
 
+def gettype(key: str) -> str:
+    if key in type_map:
+        return type_map[key]
+    return key
 
 class cpp:
 
@@ -23,7 +27,7 @@ class cpp:
             if field.note != None:
                 strlist.append("    /// " + field.note)
             strlist.append("    {} {};".format(
-                type_map[field.type], field.name))
+                gettype(field.type), field.name))
         strlist.append("}\n")
 
         return "\n".join(strlist)
