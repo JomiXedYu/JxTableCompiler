@@ -14,7 +14,8 @@ class csharp:
 
     def gen_class(self, field_infos: TableFieldInfo) -> str:
         strlist = []
-        strlist.append("\npublic class " + field_infos.class_type_name)
+        strlist.append("\n[System.Serializable]")
+        strlist.append("public class " + field_infos.class_type_name)
         strlist.append("{")
         for _field in field_infos.field_infos:
             field: FieldInfo = _field
