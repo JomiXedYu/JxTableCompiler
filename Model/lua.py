@@ -1,20 +1,14 @@
 from TableFieldInfo import *
+import FieldType
 
-
-type_map = get_type_map()
-type_map[TypeInt16] = "number"
-type_map[TypeInt32] = "number"
-type_map[TypeInt64] = "number"
-type_map[TypeFloat] = "number"
-type_map[TypeDouble] = "number"
-type_map[TypeBool] = "boolean"
-type_map[TypeString] = "string"
-
-def gettype(key: str) -> str:
-    if key in type_map:
-        return type_map[key]
-    return key
-
+type_map = FieldType.get_type_map()
+type_map[FieldType.TypeInt16] = "number"
+type_map[FieldType.TypeInt32] = "number"
+type_map[FieldType.TypeInt64] = "number"
+type_map[FieldType.TypeFloat] = "number"
+type_map[FieldType.TypeDouble] = "number"
+type_map[FieldType.TypeBool] = "boolean"
+type_map[FieldType.TypeString] = "string"
 class lua:
 
     def get_file_ext(self):

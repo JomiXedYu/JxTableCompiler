@@ -1,16 +1,10 @@
 from TableFieldInfo import *
+import FieldType
 
-
-type_map = get_type_map()
-type_map[TypeInt16] = "short"
-type_map[TypeInt32] = "int"
-type_map[TypeInt64] = "long"
-
-def gettype(key: str) -> str:
-    if key in type_map:
-        return type_map[key]
-    return key
-
+type_map = FieldType.get_type_map()
+type_map[FieldType.TypeInt16] = "short"
+type_map[FieldType.TypeInt32] = "int"
+type_map[FieldType.TypeInt64] = "long"
 class csharp:
 
     def get_file_ext(self):
@@ -28,7 +22,7 @@ class csharp:
                 strlist.append("    /// " + field.note)
                 strlist.append("    /// </summary>")
             strlist.append("    public {} {};".format(
-                gettype(field.type), field.name))
+                FieldType.mapping_fieldtype(type_map, field.type), field.name))
         strlist.append("}\n")
 
         return "\n".join(strlist)
