@@ -40,6 +40,7 @@ def generate(table_info: TableInfo, out_folder: str) -> str:
     path = out_folder + "/" + table_info.name + ".lua"
     with open(path, "w+", encoding="utf-8") as fs:
         fs.write(content)
+    print("MODEL: " + path)
 
 def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bool):
     if not is_combine:
@@ -60,4 +61,6 @@ def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bo
     path = out_folder + out_folder[out_folder.rfind('/'):] + ".lua"
     with open(path, "w+", encoding="utf-8") as fs:
         fs.write('\n'.join(content))
+    
+    print("MODEL: " + path)
     

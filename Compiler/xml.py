@@ -33,6 +33,7 @@ def compile(table_data: TableData, out_folder: str):
     path = out_folder + "/" + table_data.name + ".xml"
     with open(path, "w+", encoding="utf-8") as f:
         doc.writexml(f, addindent="  ", newl="\n", encoding="utf-8")
+        print("DATA: " + path)
 
 
 def batch_compile(table_datas: dict[str, TableData], out_folder: str, is_combine: bool):

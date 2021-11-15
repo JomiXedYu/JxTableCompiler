@@ -75,17 +75,18 @@ def insert_data(conn, table_data: TableData):
 
 def compile(table_data: TableData, out_folder: str):
 
-    path = out_folder + "/" + table_data.name + ".db"
+    dbpath = out_folder + "/" + table_data.name + ".db"
 
-    if(os.path.exists(path)):
-        os.remove(path)
+    if(os.path.exists(dbpath)):
+        os.remove(dbpath)
 
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(dbpath)
 
     create_table(conn, table_data.table_info)
     insert_data(conn, table_data)
 
     conn.close()
+    print("DATA: " + dbpath)
 
 
 def batch_compile(table_datas: dict[str, TableData], out_folder: str, is_combine: bool):
@@ -101,5 +102,6 @@ def batch_compile(table_datas: dict[str, TableData], out_folder: str, is_combine
     for table_data in table_datas.values():
         create_table(conn, table_data.table_info)
         insert_data(conn, table_data)
-
+    
     conn.close()
+    print("DATA: " + dbpath)

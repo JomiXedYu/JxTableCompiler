@@ -47,6 +47,7 @@ def generate(table_info: TableInfo, out_folder: str):
 
     with open(outpath, "w+", encoding="utf-8") as f:
         f.write("\n".join(strlist))
+    print("MODEL: " + outpath)
     
 
 def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bool):
@@ -71,3 +72,4 @@ def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bo
 
     with open(outpath, "w+", encoding="utf-8") as f:
         f.write(content)
+    print("MODEL: " + outpath)
