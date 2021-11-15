@@ -3,7 +3,12 @@ import ExtensionLoader
 from TableData import gen_table_data, gen_table_datas
 from TableInfo import TableInfo
 
-models = ExtensionLoader.get_classes("Model")
+from Model import _loader
+
+def get_generator(name: str):
+    return getattr(_loader, name)
+
+# models = ExtensionLoader.get_classes("Model")
 
 def __create_folder(folder):
     if not os.path.exists(folder):
@@ -12,7 +17,7 @@ def __create_folder(folder):
 def generate(generator_name: str, excel_path: str, out_folder: str):
     __create_folder(out_folder)
     tabledata = gen_table_data(excel_path)
-    models[generator_name].generate(tabledata.table_info, out_folder)
+    get_generator(generator_name).generate(tabledata.table_info, out_folder)
     pass
 
 def batch_generate(generator_name: str, excel_paths: list[str], out_folder:str, is_combine: bool):
@@ -23,5 +28,5 @@ def batch_generate(generator_name: str, excel_paths: list[str], out_folder:str, 
     for name, tabledata in tabledatas.items():
         infos.append(tabledata.table_info)
 
-    models[generator_name].batch_generate(infos, out_folder, is_combine)
+    get_generator(generator_name).batch_generate(infos, out_folder, is_combine)
     pass
