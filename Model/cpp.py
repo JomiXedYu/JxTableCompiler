@@ -1,67 +1,80 @@
-from TableFieldInfo import *
 import FieldType
 
-type_map = FieldType.get_type_map()
-type_map[FieldType.TypeInt16] = "int16_t"
-type_map[FieldType.TypeInt32] = "int32_t"
-type_map[FieldType.TypeInt64] = "int64_t"
-type_map[FieldType.TypeString] = "std::string"
+from TableInfo import *
 
-class cpp:
+typemap = FieldType.get_fieldtype_map()
+typemap[FieldType.TypeInt16] = "int16_t"
+typemap[FieldType.TypeInt32] = "int32_t"
+typemap[FieldType.TypeInt64] = "int64_t"
+typemap[FieldType.TypeString] = "std::string"
 
-    def get_file_ext(self):
-        return ".hpp"
+def gen_class(table_info: TableInfo) -> str:
+    strlist = []
+    strlist.append("\nstruct " + table_info.struct_name)
+    strlist.append("{")
+    for _field in table_info.field_infos:
+        field: FieldInfo = _field
+        if field.note != None:
+            strlist.append("    //" + field.note)
+        strlist.append("    {} {};".format(
+            FieldType.mapping_fieldtype(typemap, field.type), field.name))
+    strlist.append("};\n")
 
-    def gen_class(self, field_infos: TableFieldInfo) -> str:
-        strlist = []
-        strlist.append("\nclass " + field_infos.class_type_name)
+    return "\n".join(strlist)
+
+
+def generate(table_info: TableInfo, out_folder: str):
+    strlist = []
+
+    namespace = table_info.namespace
+
+    if namespace != None:
+        strlist.append("namespace {}".format(namespace))
         strlist.append("{")
-        strlist.append("public:")
-        for _field in field_infos.field_infos:
-            field: FieldInfo = _field
-            if field.note != None:
-                strlist.append("    /// " + field.note)
-            strlist.append("    {} {};".format(
-                FieldType.mapping_fieldtype(type_map, field.type), field.name))
-        strlist.append("}\n")
 
-        return "\n".join(strlist)
+    body = gen_class(table_info)
 
-    def get_model(self, field_infos: TableFieldInfo) -> str:
-        strlist = []
+    if namespace != None:
+        body = body.replace("\n", "\n    ")
+    strlist.append(body)
 
-        namespace = field_infos.namespace
+    if namespace != None:
+        strlist.append("}")
 
-        if namespace != None:
-            strlist.append("namespace {}".format(namespace))
+    outstr = "\n".join(strlist)
+    outpath = out_folder + "/" + table_info.name + ".h"
+
+    with open(outpath, "w+", encoding="utf-8") as f:
+        f.write(outstr)
+    
+
+def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bool):
+
+    if not is_combine:
+        for table_info in table_infos:
+            generate(table_info, out_folder)
+        return
+
+    strlist = []
+
+    nsinfo = tableinfos_to_namespacedic(table_infos)
+
+    for ns, tbinfos in nsinfo.items():
+        if ns != "":
+            strlist.append("namespace {}".format(ns))
             strlist.append("{")
 
-        body = self.gen_class(field_infos)
-        if namespace != None:
-            body = body.replace("\n", "\n    ")
-        strlist.append(body)
-
-        if namespace != None:
+        for tbinfo in tbinfos:
+            body = gen_class(tbinfo)
+            if ns != "":
+                body = body.replace("\n", "\n    ")
+            strlist.append(body)
+        if ns != "":
             strlist.append("}")
 
-        return "\n".join(strlist)
 
-    def get_all_model(self, table_field_infos: dict[str, TableFieldInfo]) -> str:
-        strlist = []
+    content = "\n".join(strlist)
+    outpath = out_folder + out_folder[out_folder.rfind('/'):] + ".h"
 
-        nsinfo = get_namespace_dict(table_field_infos)
-
-        for ns, tbinfos in nsinfo.items():
-            if ns != "":
-                strlist.append("namespace {}".format(ns))
-                strlist.append("{")
-
-            for tbinfo in tbinfos:
-                body = self.gen_class(tbinfo)
-                if ns != "":
-                    body = body.replace("\n", "\n    ")
-                strlist.append(body)
-            if ns != "":
-                strlist.append("}")
-
-        return "\n".join(strlist)
+    with open(outpath, "w+", encoding="utf-8") as f:
+        f.write(content)

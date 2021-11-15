@@ -1,24 +1,31 @@
 
 class FieldInfo:
-    def __init__(self, type: str, name: str, note: str) -> None:
+    def __init__(self, type: str, name: str, note: str, isprop: bool) -> None:
         self.type = type
         self.name = name
         self.note = note
+        self.isprop = isprop
 
     def __str__(self) -> str:
         return str.format("{{type: {}, name: {}, note: {}}}", self.type, self.name, self.note)
-
-
-class TableFieldInfo:
-
-    class_type_name: str
+        
+class TableInfo:
+    name: str
+    struct_name: str
     field_infos: list[FieldInfo]
     namespace: str
 
-    def __init__(self, class_type_name: str, field_infos: list[FieldInfo], namespace: str = None) -> None:
-        self.class_type_name = class_type_name
+    def __init__(self, name: str, field_infos: list[FieldInfo]) -> None:
+        self.name = name
         self.field_infos = field_infos
-        self.namespace = namespace
+
+        self.struct_name = None
+        self.namespace = None
+        if self.name.find('.') >= 0:
+            self.struct_name = self.name[self.name.rfind('.')+1:]
+            self.namespace = self.name[:self.name.find('.')]
+        else:
+            self.struct_name = name
 
     def __len__(self):
         return len(self.field_infos)
@@ -26,12 +33,10 @@ class TableFieldInfo:
     def __str__(self) -> str:
         return str(self.field_infos)
 
-def get_namespace_dict(table_infos : dict[str, TableFieldInfo]) -> dict[str, list[TableFieldInfo]]:
-    """
-    return dict[ns:str, list[tb:TableFieldInfo]]
-    """
+
+def tableinfos_to_namespacedic(table_infos: list[TableInfo]) -> dict[str, list[TableInfo]]:
     dic = {}
-    for name, tfinfo in table_infos.items():
+    for tfinfo in table_infos:
         if tfinfo.namespace == None: # non namespace
             if "" not in dic:
                 dic[""] = []

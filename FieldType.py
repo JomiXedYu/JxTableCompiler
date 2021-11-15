@@ -1,4 +1,5 @@
 
+
 TypeInt16 = "int16"
 TypeInt32 = "int32"
 TypeInt64 = "int64"
@@ -7,8 +8,7 @@ TypeDouble = "double"
 TypeBool = "bool"
 TypeString = "string"
 
-
-def get_type_map():
+def get_fieldtype_map():
     type_map = {
         TypeInt16: TypeInt16,
         TypeInt32: TypeInt32,
@@ -19,7 +19,6 @@ def get_type_map():
         TypeString: TypeString
     }
     return type_map
-
 
 def mapping_fieldtype(mapping: dict, type: str):
     if type in mapping:

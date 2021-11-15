@@ -1,65 +1,73 @@
-from TableFieldInfo import *
+import FieldType
+
+from TableInfo import *
+
+typemap = FieldType.get_fieldtype_map()
+typemap[FieldType.TypeInt16] = "short"
+typemap[FieldType.TypeInt32] = "int"
+typemap[FieldType.TypeInt64] = "long"
+typemap[FieldType.TypeBool] = "boolean"
+typemap[FieldType.TypeString] = "String"
+
+def gen_class(table_info: TableInfo, is_public: bool) -> str:
+    strlist = []
+    strlist.append("\n")
+
+    head = "class "
+
+    if is_public:
+        head = "public " + head
+        
+    strlist.append(head + table_info.struct_name + " {")
+    for _field in table_info.field_infos:
+        field: FieldInfo = _field
+        if field.note != None:
+            strlist.append("    /**")
+            strlist.append("    * " + field.note)
+            strlist.append("    */")
+
+        strlist.append("    public {} {};".format(FieldType.mapping_fieldtype(typemap, field.type), field.name))
+    strlist.append("}\n")
+
+    return "\n".join(strlist)
 
 
-type_map = get_type_map()
-type_map[TypeInt16] = "short"
-type_map[TypeInt32] = "int"
-type_map[TypeInt64] = "long"
-type_map[TypeBool] = "boolean"
-type_map[TypeString] = "String"
+def generate(table_info: TableInfo, out_folder: str):
+    strlist = []
 
-def gettype(key: str) -> str:
-    if key in type_map:
-        return type_map[key]
-    return key
+    namespace = table_info.namespace
 
-class java:
+    if namespace != None:
+        strlist.append("package {};".format(namespace))
 
-    def get_file_ext(self):
-        return ".java"
+    body = gen_class(table_info, True)
+    strlist.append(body)
 
-    def gen_class(self, field_infos: TableFieldInfo, is_public: bool) -> str:
-        strlist = []
-        strlist.append("\npublic class " + field_infos.class_type_name + " {")
-        for _field in field_infos.field_infos:
-            field: FieldInfo = _field
-            if field.note != None:
-                strlist.append("    /**")
-                strlist.append("    * " + field.note)
-                strlist.append("    */")
+    outpath = out_folder + "/" + table_info.name + ".java"
 
-            public_str = ""
-            if is_public:
-                public_str = "public "
+    with open(outpath, "w+", encoding="utf-8") as f:
+        f.write("\n".join(strlist))
+    
 
-            strlist.append("    {}{} {};".format(
-                public_str, gettype(field.type), field.name))
-        strlist.append("}\n")
+def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bool):
 
-        return "\n".join(strlist)
+    if not is_combine:
+        for table_info in table_infos:
+            generate(table_info, out_folder)
+        return
 
-    def get_model(self, field_infos: TableFieldInfo) -> str:
-        strlist = []
+    strlist = []
 
-        namespace = field_infos.namespace
+    nsinfo = tableinfos_to_namespacedic(table_infos)
 
-        if namespace != None:
-            strlist.append("package {};".format(namespace))
+    for ns, tbinfos in nsinfo.items():
 
-        body = self.gen_class(field_infos, True)
-        strlist.append(body)
+        for tbinfo in tbinfos:
+            body = gen_class(tbinfo, False)
+            strlist.append(body)
 
-        return "\n".join(strlist)
+    outpath = out_folder + out_folder[out_folder.rfind('/'):] + ".java"
+    content = "\n".join(strlist)
 
-    def get_all_model(self, table_field_infos: dict[str, TableFieldInfo]) -> str:
-        strlist = []
-
-        nsinfo = get_namespace_dict(table_field_infos)
-
-        for ns, tbinfos in nsinfo.items():
-
-            for tbinfo in tbinfos:
-                body = self.gen_class(tbinfo, False)
-                strlist.append(body)
-
-        return "\n".join(strlist)
+    with open(outpath, "w+", encoding="utf-8") as f:
+        f.write(content)

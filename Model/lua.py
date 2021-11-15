@@ -1,59 +1,60 @@
-from TableFieldInfo import *
 import FieldType
+from TableInfo import *
 
-type_map = FieldType.get_type_map()
-type_map[FieldType.TypeInt16] = "number"
-type_map[FieldType.TypeInt32] = "number"
-type_map[FieldType.TypeInt64] = "number"
-type_map[FieldType.TypeFloat] = "number"
-type_map[FieldType.TypeDouble] = "number"
-type_map[FieldType.TypeBool] = "boolean"
-type_map[FieldType.TypeString] = "string"
-class lua:
+typemap = FieldType.get_fieldtype_map()
+typemap[FieldType.TypeInt16] = "number"
+typemap[FieldType.TypeInt32] = "number"
+typemap[FieldType.TypeInt64] = "number"
+typemap[FieldType.TypeFloat] = "number"
+typemap[FieldType.TypeDouble] = "number"
+typemap[FieldType.TypeBool] = "boolean"
+typemap[FieldType.TypeString] = "string"
 
-    def get_file_ext(self):
-        return ".lua"
 
-    def gen_class(self, field_infos: TableFieldInfo) -> str:
-        strlist = []
-        strlist.append("\nlocal " + field_infos.class_type_name + " = ")
-        strlist.append("{")
-        for _field in field_infos.field_infos:
-            field: FieldInfo = _field
-            if field.note != None:
-                strlist.append("    -- " + field.note)
-            strlist.append("    ---@type " + field.type)
-            strlist.append("    local {} = nil".format(field.name))
-        strlist.append("}\n")
+def gen_class(field_infos: TableInfo) -> str:
+    strlist = []
+    strlist.append("\nlocal " + field_infos.struct_name + " = ")
+    strlist.append("{")
+    for _field in field_infos.field_infos:
+        field: FieldInfo = _field
+        if field.note != None:
+            strlist.append("    -- " + field.note)
+        strlist.append("    ---@type " + FieldType.mapping_fieldtype(typemap, field.type))
+        strlist.append("    local {} = nil".format(field.name))
+    strlist.append("}\n")
 
-        return "\n".join(strlist)
+    return "\n".join(strlist)
 
-    def get_model(self, field_infos: TableFieldInfo) -> str:
-        strlist = []
 
-        body = self.gen_class(field_infos)
-        strlist.append(body)
+def generate(table_info: TableInfo, out_folder: str) -> str:
+    strlist = []
 
-        strlist.append("return " + field_infos.class_type_name)
+    body = gen_class(table_info)
+    strlist.append(body)
 
-        return "\n".join(strlist)
+    strlist.append("return " + table_info.struct_name)
 
-    def get_all_model(self, table_field_infos: dict[str, TableFieldInfo]) -> str:
-        strlist = []
+    content = "\n".join(strlist)
+    path = out_folder + "/" + table_info.name + ".lua"
+    with open(path, "w+", encoding="utf-8") as fs:
+        fs.write(content)
 
-        nsinfo = get_namespace_dict(table_field_infos)
+def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bool):
+    if not is_combine:
+        for table_info in table_infos:
+            generate(table_info, out_folder)
+        return
 
-        for ns, tbinfos in nsinfo.items():
+    content = []
+    for table_info in table_infos:
+        content.append(gen_class(table_info))
 
-            for tbinfo in tbinfos:
-                body = self.gen_class(tbinfo)
-                strlist.append(body)
-
-        strlist.append("return {")
-        for tb in nsinfo.values():
-            for info in tb:
-                strlist.append("    " + info.class_type_name +
-                               " = " + info.class_type_name + ",")
-        strlist.append("}")
-
-        return "\n".join(strlist)
+    content.append("return {")
+    for table_info in table_infos:
+        content.append("  " + table_info.struct_name + " = " + table_info.struct_name + ",")
+    content.append("}")
+    
+    path = out_folder + out_folder[out_folder.rfind('/'):] + ".lua"
+    with open(path, "w+", encoding="utf-8") as fs:
+        fs.write('\n'.join(content))
+    

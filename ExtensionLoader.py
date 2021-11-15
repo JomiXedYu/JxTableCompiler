@@ -10,7 +10,7 @@ def is_pyfile(filename: str) -> bool:
     return get_filename_ext(filename) == ".py"
 
 
-def get_module_names(dir: str) -> list:
+def get_module_names(dir: str) -> list[str]:
     ret = []
     for f in os.listdir(dir):
         if not is_pyfile(f):
@@ -26,6 +26,5 @@ def get_classes(folder: str) -> dict[str, any]:
     dict = {}
     for name in names:
         module = importlib.import_module(folder.replace('/', '.') + '.' + name)
-        class_type = getattr(module, name)
-        dict[name] = class_type()
+        dict[name] = module
     return dict
