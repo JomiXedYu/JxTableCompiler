@@ -1,4 +1,5 @@
 import FieldType
+import Utility
 from TableInfo import *
 
 typemap = FieldType.get_fieldtype_map()
@@ -28,6 +29,7 @@ def gen_class(field_infos: TableInfo) -> str:
 
 def generate(table_info: TableInfo, out_folder: str) -> str:
     strlist = []
+    strlist.append(Utility.get_data_geninfo("---", "lua"))
 
     body = gen_class(table_info)
     strlist.append(body)
@@ -46,6 +48,7 @@ def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bo
         return
 
     content = []
+    content.append(Utility.get_model_geninfo("---", "lua"))
     for table_info in table_infos:
         content.append(gen_class(table_info))
 

@@ -1,5 +1,5 @@
 import FieldType
-
+import Utility
 from TableInfo import *
 
 typemap = FieldType.get_fieldtype_map()
@@ -25,6 +25,7 @@ def gen_class(table_info: TableInfo) -> str:
 
 def generate(table_info: TableInfo, out_folder: str):
     strlist = []
+    strlist.append(Utility.get_model_geninfo("//", "cpp"))
 
     namespace = table_info.namespace
 
@@ -56,7 +57,8 @@ def batch_generate(table_infos: list[TableInfo], out_folder: str, is_combine: bo
         return
 
     strlist = []
-
+    strlist.append(Utility.get_model_geninfo("//", "cpp"))
+    
     nsinfo = tableinfos_to_namespacedic(table_infos)
 
     for ns, tbinfos in nsinfo.items():

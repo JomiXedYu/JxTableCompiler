@@ -1,5 +1,5 @@
 import FieldType
-
+import Utility
 from TableInfo import *
 
 typemap = FieldType.get_fieldtype_map()
@@ -34,9 +34,9 @@ def gen_class(table_info: TableInfo, is_public: bool) -> str:
 
 def generate(table_info: TableInfo, out_folder: str):
     strlist = []
+    strlist.append(Utility.get_model_geninfo("//", "java"))
 
     namespace = table_info.namespace
-
     if namespace != None:
         strlist.append("package {};".format(namespace))
 

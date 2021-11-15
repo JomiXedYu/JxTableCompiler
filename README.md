@@ -99,7 +99,7 @@ public class 表名
 - xml
 
 
-## Unity3d快速脚本
+## 快速脚本
 为了方便的使用该程序，提供windows批处理脚本`compile.bat`：  
 目录结构：  
 ```
@@ -163,5 +163,7 @@ echo compile complete.
 
 pause
 
-
 ```
+
+## 第三方
+- openpyxl
