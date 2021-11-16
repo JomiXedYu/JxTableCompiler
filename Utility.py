@@ -7,3 +7,12 @@ def get_model_geninfo(docsymbol: str, data_compiler: str):
         docsymbol + " model generator: " + data_compiler
     ]
     return "\n".join(strs)
+
+def std_path(path: str) -> str:
+    return path.replace('\\', '/')
+
+def std_paths(paths: list[str]) -> list[str]:
+    lst = []
+    for item in paths:
+        lst.append(std_path(item))
+    return lst 
