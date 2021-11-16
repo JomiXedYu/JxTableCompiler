@@ -101,6 +101,8 @@ public class 表名
 
 ## 快速脚本
 为了方便的使用该程序，提供windows批处理脚本`compile.bat`：  
+> 如下载的是Release中的可执行文件版本，则在压缩包内寻找。  
+
 目录结构：  
 ```
 ProjectRoot:
@@ -113,26 +115,34 @@ ProjectRoot:
     |-b.xlsx
     |-....xlsx
 ```
-需要手动设置四个用户变量，数据源输出文件夹，结构体输出文件夹，结构生成器，数据生成器：
+可以手动设置的参数在USER VARIABLE中：
+- ProjectRoot 项目根目录
+- JxTableCompilerPath 本程序所在目录
+- JxTableCompilerFilename 本程序名（有可能是py或者为打包的可执行程序）
+- DataTableOutFolder 数据表输出文件夹
+- ModelOutFolder 结构输出文件夹
+- ModelGenerator 结构生成器
+- DataCompiler 数据生成器
 ```bat
 @echo off
-set APPPATH=%~dp0
+set AppPath=%~dp0
 cd /d %~dp0
 cd ..
 
-set ProjectRoot=%cd%
-set JxTableCompilerPath=%APPPATH%\JxTableCompiler
-
 ::=====USER VARIABLE=====
+set ProjectRoot=%cd%
+set JxTableCompilerPath=%AppPath%\JxTableCompiler
+set JxTableCompilerFilename=Main.py
 set DataTableOutFolder=%ProjectRoot%\Assets\Resources\DataTable
 set ModelOutFolder=%ProjectRoot%\Assets\Scripts\DataTable
 set ModelGenerator=csharp
 set DataCompiler=json
 ::=======================
 
+set JxTableCompilerExec=%JxTableCompilerPath%\%JxTableCompilerFilename%
 
 echo -----------config-----------
-echo JxTableCompilerPath = %JxTableCompilerPath%
+echo JxTableCompilerExec = %JxTableCompilerExec%
 echo DataTableOutFolder = %DataTableOutFolder%
 echo ModelOutFolder = %ModelOutFolder%
 echo ModelGenerator = %ModelGenerator%
@@ -141,9 +151,9 @@ echo ----------------------------
 
 echo build_list...
 
-cd /d %APPPATH%
+cd /d %AppPath%
 
-set listname=%APPPATH%_table_list.txt
+set listname=%AppPath%_table_list.txt
 
 echo outlist: %listname%
 
@@ -157,12 +167,11 @@ echo build list complete.
 title JxTableCompiler
 
 cd /d %JxTableCompilerPath%
-py Main.py %listname% --model %ModelGenerator% --model_out %ModelOutFolder% --combine_model True --data %DataCompiler% --data_out %DataTableOutFolder%
+%JxTableCompilerExec% %listname% --model %ModelGenerator% --model_out %ModelOutFolder% --combine_model True --data %DataCompiler% --data_out %DataTableOutFolder%
 
 echo compile complete.
 
 pause
-
 ```
 
 ## 第三方
